@@ -13,13 +13,9 @@ public:
 
 	void Update();
 
-	void DrawDebugText();
-
 	void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 	void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
-
-	void Draw();
 
 	void Main();
 
@@ -33,9 +29,9 @@ private:
 
 	Camera* camera_;
 
-	Sphere sphere_[2];
+	Segment segment_;
 
-	uint32_t sphereColor_[2];
+	Vector3 point_;
 
 };
 

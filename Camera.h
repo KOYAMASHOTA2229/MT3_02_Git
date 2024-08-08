@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "MyFunction.h"
 
-class Camera :public MyFunction {
+class Camera:public MyFunction{
 
 public:
 
@@ -20,7 +20,7 @@ public:
 public:
 
 	Matrix4x4 GetViewMatrix();
-
+	
 	Matrix4x4 GetProjectionMatrix();
 
 	Matrix4x4 GetViewportMatrix();
@@ -46,3 +46,4 @@ private:
 	static inline const float kWindowHeight_ = 720.0f;
 
 };
+
