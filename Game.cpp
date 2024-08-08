@@ -21,19 +21,17 @@ Game::Game(){
 
 	camera_ = new Camera(cameraAffine_);
 
-	sphere_[0] = {
-		{0.0f,0.0f,0.0f},
+	sphere_ = {
+		{0.12f,0.0f,0.0f},
 		0.6f
 	};
 
-	sphere_[1] = {
-		{0.8f,0.0f,1.0f},
-		0.4f
+	sphereColor_ = WHITE;
+	
+	plane_ = {
+		{0.0f,1.0f,0.0f},
+		1.0f
 	};
-
-	for (uint32_t i = 0; i < 2; i++) {
-		sphereColor_[i] = WHITE;
-	}
 
 }
 
@@ -55,12 +53,23 @@ void Game::Update(){
 
 	camera_->MakeViewportMatrix();
 
-	if (MyFunction::IsCollision(sphere_[0], sphere_[1]))
-	{
-		sphereColor_[0] = RED;
+	Game::CheckIsCollision();
+
+
+
+}
+
+void Game::CheckIsCollision() {
+
+	
+	if (MyFunction::IsCollision(sphere_, plane_)) {
+
+		
+		sphereColor_ = RED;
 	}
 	else {
-		sphereColor_[0] = WHITE;
+		
+		sphereColor_ = WHITE;
 	}
 
 }
@@ -68,10 +77,14 @@ void Game::Update(){
 void Game::DrawDebugText()
 {
 	ImGui::Begin("DebugWindow");
-	ImGui::DragFloat3("sphere[0] center", &sphere_[0].center.x, 0.01f);
-	ImGui::DragFloat("sphere[0] radius", &sphere_[0].radius, 0.01f);
-	ImGui::DragFloat3("sphere[1] center", &sphere_[1].center.x, 0.01f);
-	ImGui::DragFloat("sphere[1] radius", &sphere_[1].radius, 0.01f);
+	ImGui::DragFloat3("sphere center", &sphere_.center.x, 0.01f);
+	ImGui::DragFloat("sphere radius", &sphere_.radius, 0.01f);
+	ImGui::DragFloat3("Plane Normal", &plane_.normal.x, 0.01f);
+	plane_.normal = MyFunction::Normalize(plane_.normal);
+	ImGui::DragFloat("plane distance", &plane_.distance, 0.01f);
+	ImGui::DragFloat3("cameraScale", &cameraAffine_.scale.x, 0.01f);
+	ImGui::DragFloat3("cameraRotate", &cameraAffine_.rotate.x, 0.01f);
+	ImGui::DragFloat3("cameraTranslate", &cameraAffine_.translate.x, 0.01f);
 	ImGui::End();
 }
 
@@ -149,17 +162,43 @@ void Game::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatri
 
 }
 
+void Game::DrawPlane(const Plane& plane, Matrix4x4 viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	Vector3 center = MyFunction::Multiply(plane.distance, plane.normal);
+
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = MyFunction::Normalize(MyFunction::Perpendicular(plane.normal));
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y,-perpendiculars[0].z };
+	perpendiculars[2] = MyFunction::Cross(plane.normal, perpendiculars[0]);
+	perpendiculars[3] = { -perpendiculars[2].x,-perpendiculars[2].y,-perpendiculars[2].z };
+
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; index++) {
+		Vector3 extend = MyFunction::Multiply(2.0f, perpendiculars[index]);
+		Vector3 point = MyFunction::Add(center, extend);
+		points[index] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+
+	///pointsをそれぞれ結んで、DrawLineで平面を描画する
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[3].x), int(points[3].y), color);
+	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[2].x), int(points[2].y), color);
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[2].x), int(points[2].y), color);
+	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[3].x), int(points[3].y), color);
+}
+
 void Game::Draw()
 {
 
 	uint32_t gridColor = GRAY;
+	uint32_t planeColor = WHITE;
 
 	Game::DrawDebugText();
 
 	Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor);
 
-	Game::DrawSphere(sphere_[0], world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor_[0]);
-	Game::DrawSphere(sphere_[1], world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor_[1]);
+	Game::DrawSphere(sphere_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor_);
+
+	Game::DrawPlane(plane_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), planeColor);
 
 }
 

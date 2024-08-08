@@ -6,13 +6,23 @@
 #include <cmath>
 #include <cassert>
 
-class MyFunction{
+class MyFunction {
 
 public:
 
 	static float cot(float x);
 
+	static Vector3 Add(const Vector3& v1, const Vector3& v2);
+
+	static Vector3 Multiply(float scalar, const Vector3& v2);
+
 	static float Length(const Vector3& v);
+
+	static Vector3 Normalize(const Vector3& v);
+
+	static Vector3 Cross(const Vector3& v1, const Vector3& v2);
+
+	static Vector3 Perpendicular(const Vector3& vector);
 
 	static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
 
@@ -38,7 +48,7 @@ public:
 
 	static Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
-	static bool IsCollision(const Sphere& s1, const Sphere& s2);
+	static bool IsCollision(const Sphere& sphere, const Plane& plane);
 
 };
 

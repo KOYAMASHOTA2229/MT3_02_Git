@@ -11,6 +11,8 @@ public:
 
 	~Game();
 
+	void CheckIsCollision();
+
 	void Update();
 
 	void DrawDebugText();
@@ -18,6 +20,8 @@ public:
 	void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 	void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
+	void DrawPlane(const Plane& plane, Matrix4x4 viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 	void Draw();
 
@@ -33,9 +37,11 @@ private:
 
 	Camera* camera_;
 
-	Sphere sphere_[2];
+	Sphere sphere_;
 
-	uint32_t sphereColor_[2];
+	uint32_t sphereColor_;
+
+	Plane plane_;
 
 };
 

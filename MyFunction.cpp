@@ -7,6 +7,17 @@ float MyFunction::cot(float x){
 	return 1.0f / tanf(x);
 }
 
+Vector3 MyFunction::Add(const Vector3& v1, const Vector3& v2)
+{
+	return { v1.x + v2.x,v1.y + v2.y,v1.z + v2.z };
+}
+
+Vector3 MyFunction::Multiply(float scalar, const Vector3& v2)
+{
+	return { scalar * v2.x ,scalar * v2.y,scalar * v2.z };
+}
+
+
 float MyFunction::Length(const Vector3& v) {
 
 	float result = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -14,6 +25,36 @@ float MyFunction::Length(const Vector3& v) {
 	return result;
 
 }
+
+Vector3 MyFunction::Normalize(const Vector3& v)
+{
+	float length = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+	Vector3 resultNormalize = { v.x,v.y,v.z };
+	if (length != 0.0f)
+	{
+		resultNormalize = { v.x / length,v.y / length,v.z / length };
+	}
+	return resultNormalize;
+}
+
+Vector3 MyFunction::Cross(const Vector3& v1, const Vector3& v2)
+{
+	Vector3 resultCross = {
+		v1.y * v2.z - v1.z * v2.y,
+		v1.z * v2.x - v1.x * v2.z,
+		v1.x * v2.y - v1.y * v2.x
+	};
+	return resultCross;
+}
+
+Vector3 MyFunction::Perpendicular(const Vector3& vector)
+{
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y ,vector.x,0.0f };
+	}
+	return { 0.0,-vector.z,vector.y };
+}
+
 
 Matrix4x4 MyFunction::Multiply(const Matrix4x4& m1, const Matrix4x4& m2){
 
@@ -223,19 +264,20 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 	
 }
 
-bool MyFunction::IsCollision(const Sphere& s1, const Sphere& s2)
-{
-	Vector3 sphereLenght = {
-		s2.center.x - s1.center.x,
-		s2.center.y - s1.center.y ,
-		s2.center.z - s1.center.z
-	};
-	float distance = MyFunction::Length(sphereLenght);
-	
-	if (distance <= (s1.radius + s2.radius))
-	{
+bool MyFunction::IsCollision(const Sphere& sphere, const Plane& plane) {
+
+	Vector3 center = sphere.center;
+
+	Vector3 normalizeNormal = MyFunction::Normalize(plane.normal);
+
+	float distance = (normalizeNormal.x * center.x +
+		normalizeNormal.y * center.y +
+		normalizeNormal.z * center.z) - plane.distance;
+
+	if (fabsf(distance) <= sphere.radius) {
 		return true;
 	}
 
 	return false;
+
 }
