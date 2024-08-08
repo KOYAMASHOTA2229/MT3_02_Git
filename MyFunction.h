@@ -18,6 +18,8 @@ public:
 
 	static float Length(const Vector3& v);
 
+	static float Dot(const Vector3& v1, const Vector3& v2);
+
 	static Vector3 Normalize(const Vector3& v);
 
 	static Vector3 Cross(const Vector3& v1, const Vector3& v2);
@@ -48,7 +50,7 @@ public:
 
 	static Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
-	static bool IsCollision(const Sphere& sphere, const Plane& plane);
+	static bool IsCollision(const Segment& segment, const Plane& plane);
 
 };
 

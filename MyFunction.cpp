@@ -26,6 +26,10 @@ float MyFunction::Length(const Vector3& v) {
 
 }
 
+float MyFunction::Dot(const Vector3& v1, const Vector3& v2) {
+	return { v1.x * v2.x + v1.y * v2.y + v1.z * v2.z };
+}
+
 Vector3 MyFunction::Normalize(const Vector3& v)
 {
 	float length = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -264,17 +268,13 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 	
 }
 
-bool MyFunction::IsCollision(const Sphere& sphere, const Plane& plane) {
-
-	Vector3 center = sphere.center;
-
-	Vector3 normalizeNormal = MyFunction::Normalize(plane.normal);
-
-	float distance = (normalizeNormal.x * center.x +
-		normalizeNormal.y * center.y +
-		normalizeNormal.z * center.z) - plane.distance;
-
-	if (fabsf(distance) <= sphere.radius) {
+bool MyFunction::IsCollision(const Segment& segment, const Plane& plane) {
+	float dot = MyFunction::Dot(plane.normal, segment.diff);
+	if (dot == 0.0f) {
+		return false;
+	}float t = (plane.distance - MyFunction::Dot(segment.origin, plane.normal)) / dot;
+	if (t >= 0.0f && t <= 1.0f) {
+		
 		return true;
 	}
 

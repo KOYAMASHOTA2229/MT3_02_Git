@@ -20,17 +20,15 @@ Game::Game(){
 	};
 
 	camera_ = new Camera(cameraAffine_);
-
-	sphere_ = {
-		{0.12f,0.0f,0.0f},
-		0.6f
-	};
-
-	sphereColor_ = WHITE;
 	
 	plane_ = {
 		{0.0f,1.0f,0.0f},
 		1.0f
+	};
+
+	segment_ = {
+		{-0.45f,0.41f,0.0f},
+		{1.0f,0.58f,0.0f},
 	};
 
 }
@@ -62,14 +60,14 @@ void Game::Update(){
 void Game::CheckIsCollision() {
 
 	
-	if (MyFunction::IsCollision(sphere_, plane_)) {
+	if (MyFunction::IsCollision(segment_, plane_)) {
 
 		
-		sphereColor_ = RED;
+		lineColor_ = RED;
 	}
 	else {
 		
-		sphereColor_ = WHITE;
+		lineColor_ = WHITE;
 	}
 
 }
@@ -77,14 +75,14 @@ void Game::CheckIsCollision() {
 void Game::DrawDebugText()
 {
 	ImGui::Begin("DebugWindow");
-	ImGui::DragFloat3("sphere center", &sphere_.center.x, 0.01f);
-	ImGui::DragFloat("sphere radius", &sphere_.radius, 0.01f);
 	ImGui::DragFloat3("Plane Normal", &plane_.normal.x, 0.01f);
 	plane_.normal = MyFunction::Normalize(plane_.normal);
 	ImGui::DragFloat("plane distance", &plane_.distance, 0.01f);
-	ImGui::DragFloat3("cameraScale", &cameraAffine_.scale.x, 0.01f);
-	ImGui::DragFloat3("cameraRotate", &cameraAffine_.rotate.x, 0.01f);
-	ImGui::DragFloat3("cameraTranslate", &cameraAffine_.translate.x, 0.01f);
+	ImGui::DragFloat3("segment origin", &segment_.origin.x, 0.01f);
+	ImGui::DragFloat3("segment diff", &segment_.diff.x, 0.01f);
+	ImGui::DragFloat3("camera Scale", &cameraAffine_.scale.x, 0.01f);
+	ImGui::DragFloat3("camera Rotate", &cameraAffine_.rotate.x, 0.01f);
+	ImGui::DragFloat3("camera Translate", &cameraAffine_.translate.x, 0.01f);
 	ImGui::End();
 }
 
@@ -196,9 +194,13 @@ void Game::Draw()
 
 	Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor);
 
-	Game::DrawSphere(sphere_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor_);
-
 	Game::DrawPlane(plane_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), planeColor);
+
+	Vector3 start = Transform(Transform(segment_.origin, world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
+
+	Vector3 end = Transform(Transform(Add(segment_.origin, segment_.diff), world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
+
+	Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), lineColor_);
 
 }
 

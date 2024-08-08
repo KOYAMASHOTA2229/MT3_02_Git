@@ -37,11 +37,11 @@ private:
 
 	Camera* camera_;
 
-	Sphere sphere_;
-
-	uint32_t sphereColor_;
-
 	Plane plane_;
+
+	Segment segment_;
+
+	uint32_t lineColor_;
 
 };
 
