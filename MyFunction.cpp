@@ -7,16 +7,12 @@ float MyFunction::cot(float x){
 	return 1.0f / tanf(x);
 }
 
-Vector3 MyFunction::Add(const Vector3& v1, const Vector3& v2){
-	return { v1.x + v2.x,v1.y + v2.y,v1.z + v2.z };
-}
+float MyFunction::Length(const Vector3& v) {
 
-Vector3 MyFunction::Subtract(const Vector3& v1, const Vector3& v2){
-	return { v1.x - v2.x,v1.y - v2.y,v1.z - v2.z };
-}
+	float result = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 
-float MyFunction::Dot(const Vector3& v1, const Vector3& v2){
-	return { v1.x * v2.x + v1.y * v2.y + v1.z * v2.z };
+	return result;
+
 }
 
 Matrix4x4 MyFunction::Multiply(const Matrix4x4& m1, const Matrix4x4& m2){
@@ -227,32 +223,19 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 	
 }
 
-Vector3 MyFunction::Project(const Vector3& v1, const Vector3& v2){
-
-	float lenghtV2 = MyFunction::Dot(v2, v2);
-
-	float scalar = MyFunction::Dot(v1, v2) / lenghtV2;
-
-	return { v2.x * scalar,v2.y * scalar,v2.z * scalar };
-
-}
-
-Vector3 MyFunction::ClosestPoint(const Vector3& point, const Segment& segment){
-
-	Vector3 toPoint = MyFunction::Subtract(point, segment.origin);
-
-	float segmentLength = MyFunction::Dot(segment.diff, segment.diff);
-
-	float t = MyFunction::Dot(toPoint, segment.diff) / segmentLength;
-
-	t = std::fmax(0.0f, std::fmin(1.0f, t));
-
-	Vector3 closestPoint = {
-		segment.origin.x + t * segment.diff.x,
-		segment.origin.y + t * segment.diff.y,
-		segment.origin.z + t * segment.diff.z
+bool MyFunction::IsCollision(const Sphere& s1, const Sphere& s2)
+{
+	Vector3 sphereLenght = {
+		s2.center.x - s1.center.x,
+		s2.center.y - s1.center.y ,
+		s2.center.z - s1.center.z
 	};
-
-	return closestPoint;
+	float distance = MyFunction::Length(sphereLenght);
 	
+	if (distance <= (s1.radius + s2.radius))
+	{
+		return true;
+	}
+
+	return false;
 }

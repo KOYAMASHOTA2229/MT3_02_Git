@@ -1,6 +1,7 @@
 ﻿#include "Game.h"
 #include <Novice.h>
 #include <imgui.h>
+#define GRAY 0xAAAAAAFF
 
 Game::Game(){
 
@@ -20,12 +21,19 @@ Game::Game(){
 
 	camera_ = new Camera(cameraAffine_);
 
-	segment_ = {
-		{-2.0f,-1.0f,0.0f}, 
-		{ 3.0f, 2.0f,2.0f},
+	sphere_[0] = {
+		{0.0f,0.0f,0.0f},
+		0.6f
 	};
 
-	point_ = { -1.5f,0.6f,0.6f };
+	sphere_[1] = {
+		{0.8f,0.0f,1.0f},
+		0.4f
+	};
+
+	for (uint32_t i = 0; i < 2; i++) {
+		sphereColor_[i] = WHITE;
+	}
 
 }
 
@@ -47,6 +55,24 @@ void Game::Update(){
 
 	camera_->MakeViewportMatrix();
 
+	if (MyFunction::IsCollision(sphere_[0], sphere_[1]))
+	{
+		sphereColor_[0] = RED;
+	}
+	else {
+		sphereColor_[0] = WHITE;
+	}
+
+}
+
+void Game::DrawDebugText()
+{
+	ImGui::Begin("DebugWindow");
+	ImGui::DragFloat3("sphere[0] center", &sphere_[0].center.x, 0.01f);
+	ImGui::DragFloat("sphere[0] radius", &sphere_[0].radius, 0.01f);
+	ImGui::DragFloat3("sphere[1] center", &sphere_[1].center.x, 0.01f);
+	ImGui::DragFloat("sphere[1] radius", &sphere_[1].radius, 0.01f);
+	ImGui::End();
 }
 
 void Game::DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color){
@@ -123,20 +149,25 @@ void Game::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatri
 
 }
 
+void Game::Draw()
+{
+
+	uint32_t gridColor = GRAY;
+
+	Game::DrawDebugText();
+
+	Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor);
+
+	Game::DrawSphere(sphere_[0], world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor_[0]);
+	Game::DrawSphere(sphere_[1], world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor_[1]);
+
+}
+
 void Game::Main(){
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
-
-	uint32_t gridColor_ = 0xAAAAAAFF;
-
-	uint32_t sphereColor[2];
-	sphereColor[0] = RED;
-	sphereColor[1] = BLACK;
-
-	Vector3 project = { 0.0f };
-	Vector3 closestPoint = { 0.0f };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -154,10 +185,6 @@ void Game::Main(){
 		Game::Update();
 
 
-		project = MyFunction::Project(MyFunction::Subtract(point_, segment_.origin), segment_.diff);
-	
-		closestPoint = MyFunction::ClosestPoint(point_, segment_);
-
 		///
 		/// ↑更新処理ここまで
 		///
@@ -166,27 +193,7 @@ void Game::Main(){
 		/// ↓描画処理ここから
 		///
 
-		//デバッグテキストの描画
-		ImGui::Begin("DebugWindow");
-		ImGui::DragFloat3("Point", &point_.x, 0.01f);
-		ImGui::DragFloat3("Segment Origin", &segment_.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment Diff", &segment_.diff.x, 0.01f);
-		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
-		ImGui::End();
-
-		Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor_);
-
-		Vector3 start = Transform(Transform(segment_.origin, world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
-		
-		Vector3 end = Transform(Transform(Add(segment_.origin, segment_.diff), world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
-		
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), WHITE);
-
-		Sphere pointSphere = { point_,0.01f };
-		Sphere closestPointSphere = { closestPoint,0.01f };
-		
-		Game::DrawSphere(pointSphere, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor[0]);
-		Game::DrawSphere(closestPointSphere, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor[1]);
+		Game::Draw();
 
 		///
 		/// ↑描画処理ここまで

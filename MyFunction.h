@@ -12,11 +12,7 @@ public:
 
 	static float cot(float x);
 
-	static Vector3 Add(const Vector3& v1, const Vector3& v2);
-
-	static Vector3 Subtract(const Vector3& v1, const Vector3& v2);
-
-	static float Dot(const Vector3& v1, const Vector3& v2);
+	static float Length(const Vector3& v);
 
 	static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
 
@@ -42,9 +38,7 @@ public:
 
 	static Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
-	static Vector3 Project(const Vector3& v1, const Vector3& v2);
-
-	static Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
+	static bool IsCollision(const Sphere& s1, const Sphere& s2);
 
 };
 
