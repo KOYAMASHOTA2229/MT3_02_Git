@@ -17,6 +17,8 @@ public:
 
 	void DrawDebugText();
 
+	void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
 	void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 	void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
@@ -37,7 +39,7 @@ private:
 
 	Camera* camera_;
 
-	Plane plane_;
+	Triangle triangle_;
 
 	Segment segment_;
 

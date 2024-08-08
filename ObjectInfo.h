@@ -8,16 +8,6 @@ struct Affine
 	Vector3 translate;
 };
 
-struct Line {
-	Vector3 origin;
-	Vector3 diff;
-};
-
-struct Ray {
-	Vector3 origin;
-	Vector3 diff; 
-};
-
 struct Segment {
 	Vector3 origin;
 	Vector3 diff;
@@ -33,4 +23,8 @@ struct Plane {
 
 	Vector3 normal;
 	float distance;
+};
+
+struct Triangle {
+	Vector3 vertices[3];
 };

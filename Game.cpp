@@ -21,14 +21,13 @@ Game::Game(){
 
 	camera_ = new Camera(cameraAffine_);
 	
-	plane_ = {
-		{0.0f,1.0f,0.0f},
-		1.0f
-	};
+	triangle_.vertices[0] = { -1.0f,0.0f,0.0f };
+	triangle_.vertices[1] = { 0.0f,1.0f,0.0f };
+	triangle_.vertices[2] = { 1.0f,0.0f,0.0f };
 
 	segment_ = {
-		{-0.45f,0.41f,0.0f},
-		{1.0f,0.58f,0.0f},
+		{0.0f,0.5f,-1.0f},
+		{0.0f,0.5f, 2.0f},
 	};
 
 }
@@ -60,7 +59,7 @@ void Game::Update(){
 void Game::CheckIsCollision() {
 
 	
-	if (MyFunction::IsCollision(segment_, plane_)) {
+	if (MyFunction::IsCollision(triangle_, segment_)) {
 
 		
 		lineColor_ = RED;
@@ -75,16 +74,29 @@ void Game::CheckIsCollision() {
 void Game::DrawDebugText()
 {
 	ImGui::Begin("DebugWindow");
-	ImGui::DragFloat3("Plane Normal", &plane_.normal.x, 0.01f);
-	plane_.normal = MyFunction::Normalize(plane_.normal);
-	ImGui::DragFloat("plane distance", &plane_.distance, 0.01f);
+	ImGui::DragFloat3("triangle.v0", &triangle_.vertices[0].x, 0.01f);
+	ImGui::DragFloat3("triangle.v1", &triangle_.vertices[1].x, 0.01f);
+	ImGui::DragFloat3("triangle.v2", &triangle_.vertices[2].x, 0.01f);
 	ImGui::DragFloat3("segment origin", &segment_.origin.x, 0.01f);
 	ImGui::DragFloat3("segment diff", &segment_.diff.x, 0.01f);
-	ImGui::DragFloat3("camera Scale", &cameraAffine_.scale.x, 0.01f);
-	ImGui::DragFloat3("camera Rotate", &cameraAffine_.rotate.x, 0.01f);
-	ImGui::DragFloat3("camera Translate", &cameraAffine_.translate.x, 0.01f);
 	ImGui::End();
 }
+
+void Game::DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	Vector3 screenVertices[3];
+
+	for (int32_t i = 0; i < 3; i++) {
+		Vector3 ndcVertex = MyFunction::Transform(triangle.vertices[i], viewProjectionMatrix);
+		screenVertices[i] = MyFunction::Transform(ndcVertex, viewportMatrix);
+	}
+
+	Novice::DrawTriangle(
+		int(screenVertices[0].x), int(screenVertices[0].y), int(screenVertices[1].x), int(screenVertices[1].y),
+		int(screenVertices[2].x), int(screenVertices[2].y), color, kFillModeWireFrame
+	);
+}
+
 
 void Game::DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color){
 
@@ -188,13 +200,13 @@ void Game::Draw()
 {
 
 	uint32_t gridColor = GRAY;
-	uint32_t planeColor = WHITE;
+	uint32_t triangleColor = WHITE;
 
 	Game::DrawDebugText();
 
 	Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor);
 
-	Game::DrawPlane(plane_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), planeColor);
+	Game::DrawTriangle(triangle_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), triangleColor);
 
 	Vector3 start = Transform(Transform(segment_.origin, world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
 

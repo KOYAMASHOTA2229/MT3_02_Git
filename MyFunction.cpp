@@ -12,6 +12,11 @@ Vector3 MyFunction::Add(const Vector3& v1, const Vector3& v2)
 	return { v1.x + v2.x,v1.y + v2.y,v1.z + v2.z };
 }
 
+Vector3 MyFunction::Subtract(const Vector3& v1, const Vector3& v2)
+{
+	return { v1.x - v2.x,v1.y - v2.y,v1.z - v2.z };
+}
+
 Vector3 MyFunction::Multiply(float scalar, const Vector3& v2)
 {
 	return { scalar * v2.x ,scalar * v2.y,scalar * v2.z };
@@ -268,16 +273,38 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 	
 }
 
-bool MyFunction::IsCollision(const Segment& segment, const Plane& plane) {
-	float dot = MyFunction::Dot(plane.normal, segment.diff);
-	if (dot == 0.0f) {
-		return false;
-	}float t = (plane.distance - MyFunction::Dot(segment.origin, plane.normal)) / dot;
-	if (t >= 0.0f && t <= 1.0f) {
-		
+bool MyFunction::IsCollision(const Triangle& triangle, const Segment& segment)
+{
+	Vector3 v0 = triangle.vertices[0];
+	Vector3 v1 = triangle.vertices[1];
+	Vector3 v2 = triangle.vertices[2];
+
+	
+	Vector3 v01 = MyFunction::Subtract(v1, v0);
+	Vector3 v12 = MyFunction::Subtract(v2, v1);
+	Vector3 v20 = MyFunction::Subtract(v0, v2);
+
+	
+	Vector3 normal = MyFunction::Normalize(MyFunction::Cross(v01, v12));
+
+	
+	Vector3 end = MyFunction::Add(segment.origin, segment.diff);
+	Vector3 v1p = MyFunction::Subtract(end, v0);
+	Vector3 v2p = MyFunction::Subtract(end, v1);
+	Vector3 v0p = MyFunction::Subtract(end, v2);
+
+
+	Vector3 cross01 = MyFunction::Cross(v01, v1p);
+	Vector3 cross12 = MyFunction::Cross(v12, v2p);
+	Vector3 cross20 = MyFunction::Cross(v20, v0p);
+
+
+	if (MyFunction::Dot(cross01, normal) >= 0.0f &&
+		MyFunction::Dot(cross12, normal) >= 0.0f &&
+		MyFunction::Dot(cross20, normal) >= 0.0f) {
 		return true;
 	}
-
 	return false;
-
 }
+
+
