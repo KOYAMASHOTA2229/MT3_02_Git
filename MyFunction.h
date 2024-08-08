@@ -1,12 +1,15 @@
 ﻿#pragma once
 #include "Matrix4x4.h"
 #include "Vector3.h"
+#pragma once
+#include "Matrix4x4.h"
+#include "Vector3.h"
 #include "ObjectInfo.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <cassert>
 
-class MyFunction{
+class MyFunction {
 
 public:
 
@@ -47,4 +50,3 @@ public:
 	static Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 
 };
-
