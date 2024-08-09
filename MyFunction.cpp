@@ -274,17 +274,22 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 	
 }
 
-bool MyFunction::IsCollision(const AABB& aabb1, const AABB& aabb2) {
+bool MyFunction::IsCollision(const AABB& aabb, const Sphere& sphere) {
 
-	//もし衝突していれば
-	if ((aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
-		(aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) &&
-		(aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z)) {
+	Vector3 closestPoint;
+	closestPoint.x = std::clamp(sphere.center.x, aabb.min.x, aabb.max.x);
+	closestPoint.y = std::clamp(sphere.center.y, aabb.min.y, aabb.max.y);
+	closestPoint.z = std::clamp(sphere.center.z, aabb.min.z, aabb.max.z);
 
-		return true;//戻り値をtrueに設定する
-	}
+	Vector3 difference = {
+		closestPoint.x - sphere.center.x,
+		closestPoint.y - sphere.center.y,
+		closestPoint.z - sphere.center.z
+	};
 
-	return false;
+	float distance = MyFunction::Length(difference);
+
+	return distance <= sphere.radius;
 
 }
 

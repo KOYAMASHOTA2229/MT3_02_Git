@@ -43,9 +43,9 @@ private:
 
 	Sphere sphere_;
 
-	AABB aabb_[2];
+	AABB aabb_;
 
-	uint32_t aabbColor_[2];
+	uint32_t aabbColor_;
 
 };
 
