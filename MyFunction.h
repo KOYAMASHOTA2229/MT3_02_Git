@@ -53,7 +53,7 @@ public:
 
 	static Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
-	static bool IsCollision(const AABB& aabb, const Sphere& sphere);
+	static bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 
 };
 

@@ -20,18 +20,20 @@ Game::Game(){
 	};
 
 	camera_ = new Camera(cameraAffine_);
-	
-	sphere_ = {
-		{1.0f,1.0f,1.0f},
-		1.0f
-	};
 
-	aabb_ = {
+	aabb_[0] = {
 		{-0.5f,-0.5f,-0.5f},
 		{0.0f,0.0f,0.0f},
 	};
 
-	aabbColor_ = WHITE;
+	aabb_[1] = {
+		{0.2f,0.2f,0.2f},
+		{1.0f,1.0f,1.0f},
+	};
+
+	for (uint32_t i = 0; i < 2; i++) {
+		aabbColor_[i] = WHITE;
+	}
 
 }
 
@@ -62,14 +64,15 @@ void Game::Update(){
 void Game::CheckIsCollision() {
 
 	
-	if (MyFunction::IsCollision(aabb_, sphere_)) {
+	if (MyFunction::IsCollision(aabb_[0], aabb_[1])) {
 
-		aabbColor_ = RED;
+		aabbColor_[0] = RED;
 
 	}
 	else {
-		
-		aabbColor_ = WHITE;
+
+		aabbColor_[0] = WHITE;
+
 	}
 
 }
@@ -77,10 +80,10 @@ void Game::CheckIsCollision() {
 void Game::DrawDebugText()
 {
 	ImGui::Begin("DebugWindow");
-	ImGui::DragFloat3("aabb.min", &aabb_.min.x, 0.01f);
-	ImGui::DragFloat3("aabb.max", &aabb_.max.x, 0.01f);
-	ImGui::DragFloat3("sphere.center", &sphere_.center.x, 0.01f);
-	ImGui::DragFloat("sphere.radius", &sphere_.radius, 0.01f);
+	ImGui::DragFloat3("aabb[0].min", &aabb_[0].min.x, 0.01f);
+	ImGui::DragFloat3("aabb[0].max", &aabb_[0].max.x, 0.01f);
+	ImGui::DragFloat3("aabb[1].min", &aabb_[1].min.x, 0.01f);
+	ImGui::DragFloat3("aabb[1].max", &aabb_[1].max.x, 0.01f);
 	ImGui::End();
 }
 
@@ -240,15 +243,15 @@ void Game::Draw()
 {
 
 	uint32_t gridColor = GRAY;
-	uint32_t sphereColor = WHITE;
 
 	Game::DrawDebugText();
 
 	Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor);
 
-	Game::DrawSphere(sphere_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor);
+	/*Game::DrawSphere(sphere_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor);*/
 
-	Game::DrawAABB(aabb_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), aabbColor_);
+	Game::DrawAABB(aabb_[0], world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), aabbColor_[0]);
+	Game::DrawAABB(aabb_[1], world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), aabbColor_[1]);
 
 }
 
