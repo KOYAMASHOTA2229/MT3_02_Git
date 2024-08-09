@@ -1,6 +1,7 @@
 ﻿#define  NOMINMAX
 #include "MyFunction.h"
 #include <Novice.h>
+#include <algorithm>
 using namespace std;
 
 float MyFunction::cot(float x){
@@ -272,39 +273,23 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 	return result;
 	
 }
+bool MyFunction::IsCollision(const AABB& aabb, const Sphere& sphere) {
 
-bool MyFunction::IsCollision(const Triangle& triangle, const Segment& segment)
-{
-	Vector3 v0 = triangle.vertices[0];
-	Vector3 v1 = triangle.vertices[1];
-	Vector3 v2 = triangle.vertices[2];
+	Vector3 closestPoint;
+	closestPoint.x = std::clamp(sphere.center.x, aabb.min.x, aabb.max.x);
+	closestPoint.y = std::clamp(sphere.center.y, aabb.min.y, aabb.max.y);
+	closestPoint.z = std::clamp(sphere.center.z, aabb.min.z, aabb.max.z);
 
-	
-	Vector3 v01 = MyFunction::Subtract(v1, v0);
-	Vector3 v12 = MyFunction::Subtract(v2, v1);
-	Vector3 v20 = MyFunction::Subtract(v0, v2);
+	Vector3 difference = {
+		closestPoint.x - sphere.center.x,
+		closestPoint.y - sphere.center.y,
+		closestPoint.z - sphere.center.z
+	};
 
-	
-	Vector3 normal = MyFunction::Normalize(MyFunction::Cross(v01, v12));
+	float distance = MyFunction::Length(difference);
 
-	
-	Vector3 end = MyFunction::Add(segment.origin, segment.diff);
-	Vector3 v1p = MyFunction::Subtract(end, v0);
-	Vector3 v2p = MyFunction::Subtract(end, v1);
-	Vector3 v0p = MyFunction::Subtract(end, v2);
+	return distance <= sphere.radius;
 
-
-	Vector3 cross01 = MyFunction::Cross(v01, v1p);
-	Vector3 cross12 = MyFunction::Cross(v12, v2p);
-	Vector3 cross20 = MyFunction::Cross(v20, v0p);
-
-
-	if (MyFunction::Dot(cross01, normal) >= 0.0f &&
-		MyFunction::Dot(cross12, normal) >= 0.0f &&
-		MyFunction::Dot(cross20, normal) >= 0.0f) {
-		return true;
-	}
-	return false;
 }
 
 

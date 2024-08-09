@@ -21,14 +21,17 @@ Game::Game(){
 
 	camera_ = new Camera(cameraAffine_);
 	
-	triangle_.vertices[0] = { -1.0f,0.0f,0.0f };
-	triangle_.vertices[1] = { 0.0f,1.0f,0.0f };
-	triangle_.vertices[2] = { 1.0f,0.0f,0.0f };
-
-	segment_ = {
-		{0.0f,0.5f,-1.0f},
-		{0.0f,0.5f, 2.0f},
+	sphere_ = {
+		{1.0f,1.0f,1.0f},
+		1.0f
 	};
+
+	aabb_ = {
+		{-0.5f,-0.5f,-0.5f},
+		{0.0f,0.0f,0.0f},
+	};
+
+	aabbColor_ = WHITE;
 
 }
 
@@ -59,14 +62,14 @@ void Game::Update(){
 void Game::CheckIsCollision() {
 
 	
-	if (MyFunction::IsCollision(triangle_, segment_)) {
+	if (MyFunction::IsCollision(aabb_, sphere_)) {
 
-		
-		lineColor_ = RED;
+		aabbColor_ = RED;
+
 	}
 	else {
 		
-		lineColor_ = WHITE;
+		aabbColor_ = WHITE;
 	}
 
 }
@@ -74,13 +77,50 @@ void Game::CheckIsCollision() {
 void Game::DrawDebugText()
 {
 	ImGui::Begin("DebugWindow");
-	ImGui::DragFloat3("triangle.v0", &triangle_.vertices[0].x, 0.01f);
-	ImGui::DragFloat3("triangle.v1", &triangle_.vertices[1].x, 0.01f);
-	ImGui::DragFloat3("triangle.v2", &triangle_.vertices[2].x, 0.01f);
-	ImGui::DragFloat3("segment origin", &segment_.origin.x, 0.01f);
-	ImGui::DragFloat3("segment diff", &segment_.diff.x, 0.01f);
+	ImGui::DragFloat3("aabb.min", &aabb_.min.x, 0.01f);
+	ImGui::DragFloat3("aabb.max", &aabb_.max.x, 0.01f);
+	ImGui::DragFloat3("sphere.center", &sphere_.center.x, 0.01f);
+	ImGui::DragFloat("sphere.radius", &sphere_.radius, 0.01f);
 	ImGui::End();
 }
+
+void Game::DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 vertices[8];
+
+	vertices[0] = { aabb.min.x, aabb.min.y, aabb.min.z };
+	vertices[1] = { aabb.max.x, aabb.min.y, aabb.min.z };
+	vertices[2] = { aabb.min.x, aabb.max.y, aabb.min.z };
+	vertices[3] = { aabb.max.x, aabb.max.y, aabb.min.z };
+	vertices[4] = { aabb.min.x, aabb.min.y, aabb.max.z };
+	vertices[5] = { aabb.max.x, aabb.min.y, aabb.max.z };
+	vertices[6] = { aabb.min.x, aabb.max.y, aabb.max.z };
+	vertices[7] = { aabb.max.x, aabb.max.y, aabb.max.z };
+
+	for (int i = 0; i < 8; ++i) {
+		vertices[i] = Transform(vertices[i], viewProjectionMatrix);
+		vertices[i] = Transform(vertices[i], viewportMatrix);
+	}
+
+	int screenVertices[8][2];
+	for (int i = 0; i < 8; ++i) {
+		screenVertices[i][0] = static_cast<int>(vertices[i].x);
+		screenVertices[i][1] = static_cast<int>(vertices[i].y);
+	}
+
+	Novice::DrawLine(screenVertices[0][0], screenVertices[0][1], screenVertices[1][0], screenVertices[1][1], color);
+	Novice::DrawLine(screenVertices[0][0], screenVertices[0][1], screenVertices[2][0], screenVertices[2][1], color);
+	Novice::DrawLine(screenVertices[0][0], screenVertices[0][1], screenVertices[4][0], screenVertices[4][1], color);
+	Novice::DrawLine(screenVertices[1][0], screenVertices[1][1], screenVertices[3][0], screenVertices[3][1], color);
+	Novice::DrawLine(screenVertices[1][0], screenVertices[1][1], screenVertices[5][0], screenVertices[5][1], color);
+	Novice::DrawLine(screenVertices[2][0], screenVertices[2][1], screenVertices[3][0], screenVertices[3][1], color);
+	Novice::DrawLine(screenVertices[2][0], screenVertices[2][1], screenVertices[6][0], screenVertices[6][1], color);
+	Novice::DrawLine(screenVertices[3][0], screenVertices[3][1], screenVertices[7][0], screenVertices[7][1], color);
+	Novice::DrawLine(screenVertices[4][0], screenVertices[4][1], screenVertices[5][0], screenVertices[5][1], color);
+	Novice::DrawLine(screenVertices[4][0], screenVertices[4][1], screenVertices[6][0], screenVertices[6][1], color);
+	Novice::DrawLine(screenVertices[5][0], screenVertices[5][1], screenVertices[7][0], screenVertices[7][1], color);
+	Novice::DrawLine(screenVertices[6][0], screenVertices[6][1], screenVertices[7][0], screenVertices[7][1], color);
+}
+
 
 void Game::DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 
@@ -200,19 +240,15 @@ void Game::Draw()
 {
 
 	uint32_t gridColor = GRAY;
-	uint32_t triangleColor = WHITE;
+	uint32_t sphereColor = WHITE;
 
 	Game::DrawDebugText();
 
 	Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor);
 
-	Game::DrawTriangle(triangle_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), triangleColor);
+	Game::DrawSphere(sphere_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor);
 
-	Vector3 start = Transform(Transform(segment_.origin, world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
-
-	Vector3 end = Transform(Transform(Add(segment_.origin, segment_.diff), world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
-
-	Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), lineColor_);
+	Game::DrawAABB(aabb_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), aabbColor_);
 
 }
 
