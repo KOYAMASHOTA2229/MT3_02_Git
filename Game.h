@@ -13,6 +13,12 @@ public:
 
 	void CheckIsCollision();
 
+	void MoveScale();
+
+	void MoveRotation();
+
+	void CameraController();
+
 	void Update();
 
 	void DrawDebugText();
@@ -41,11 +47,17 @@ private:
 
 	Camera* camera_;
 
-	Sphere sphere_;
+	Segment segment_;
 
 	AABB aabb_;
 
 	uint32_t aabbColor_;
+
+	int prevMouseX_;
+	int prevMouseY_;
+
+	int mouseX_;
+	int mouseY_;
 
 };
 

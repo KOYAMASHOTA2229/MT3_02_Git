@@ -155,10 +155,14 @@ Matrix4x4 MyFunction::MakeTranslateMatrix(const Vector3& translate){
 	
 }
 
-Matrix4x4 MyFunction::AffineMatrix(const Affine& affine){
-
+Matrix4x4 MyFunction::SRTAffineMatrix(const Affine& affine)
+{
 	return Multiply(Multiply(MakeScaleMatrix(affine.scale), MakeRotateMatrix(affine.rotate)), MakeTranslateMatrix(affine.translate));
-	
+}
+
+Matrix4x4 MyFunction::STRAffineMatrix(const Affine& affine)
+{
+	return Multiply(Multiply(MakeScaleMatrix(affine.scale), MakeTranslateMatrix(affine.translate)), MakeRotateMatrix(affine.rotate));
 }
 
 Matrix4x4 MyFunction::Inverse(const Matrix4x4& m){
@@ -274,23 +278,29 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 	
 }
 
-bool MyFunction::IsCollision(const AABB& aabb, const Sphere& sphere) {
+bool MyFunction::IsCollision(const AABB& aabb, const Segment& segment)
+{
 
-	Vector3 closestPoint;
-	closestPoint.x = std::clamp(sphere.center.x, aabb.min.x, aabb.max.x);
-	closestPoint.y = std::clamp(sphere.center.y, aabb.min.y, aabb.max.y);
-	closestPoint.z = std::clamp(sphere.center.z, aabb.min.z, aabb.max.z);
+	float tNearX = (aabb.min.x - segment.origin.x) / segment.diff.x;
+	float tFarX = (aabb.max.x - segment.origin.x) / segment.diff.x;
+	if (tNearX > tFarX) std::swap(tNearX, tFarX);
 
-	Vector3 difference = {
-		closestPoint.x - sphere.center.x,
-		closestPoint.y - sphere.center.y,
-		closestPoint.z - sphere.center.z
-	};
+	float tNearY = (aabb.min.y - segment.origin.y) / segment.diff.y;
+	float tFarY = (aabb.max.y - segment.origin.y) / segment.diff.y;
+	if (tNearY > tFarY) std::swap(tNearY, tFarY);
 
-	float distance = MyFunction::Length(difference);
+	float tNearZ = (aabb.min.z - segment.origin.z) / segment.diff.z;
+	float tFarZ = (aabb.max.z - segment.origin.z) / segment.diff.z;
+	if (tNearZ > tFarZ) std::swap(tNearZ, tFarZ);
 
-	return distance <= sphere.radius;
+
+	float tmin = std::max(std::max(tNearX, tNearY), tNearZ);
+	float tmax = std::min(std::min(tFarX, tFarY), tFarZ);
+
+	return (tmin <= tmax) && (tmax >= 0) && (tmin <= 1);
 
 }
+
+
 
 

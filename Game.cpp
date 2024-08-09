@@ -6,33 +6,38 @@
 Game::Game(){
 
 	worldAffine_ = {
-		{1.0f,1.0f,1.0f},
-		{0,0,0},
-		{0,0,0},
+		.scale{1.0f,1.0f,1.0f},
+		.rotate{0,0,0},
+		.translate{0,0,0},
 	};
 
 	world_ = new WorldView(worldAffine_);
 
 	cameraAffine_ = {
-		{ 1.0f,1.0f,1.0f },
-		{ 0.26f,0.0f,0.0f },
-		{ 0.0f,1.9f,-6.49f }
+		.scale{ 1.0f,1.0f,1.0f },
+		.rotate{ 0.26f,0.0f,0.0f },
+		.translate{ 0.0f,0.2f,-6.77f }
 	};
 
 	camera_ = new Camera(cameraAffine_);
 
-	sphere_ = {
-		{1.0f,1.0f,1.0f},
-		1.0f
+	aabb_= {
+		.min{-0.5f,-0.5f,-0.5f},
+		.max{0.5f,0.5f,0.5f},
 	};
 
-
-	aabb_= {
-		{-0.5f,-0.5f,-0.5f},
-		{0.0f,0.0f,0.0f},
+	segment_ = {
+		.origin{-0.7f,0.3f,0.0f},
+		.diff{2.0f,-0.5f,0.0f}
 	};
 
 	aabbColor_ = WHITE;
+
+	prevMouseX_ = 0;
+	prevMouseY_ = 0;
+
+	mouseX_ = 0;
+	mouseY_ = 0;
 
 }
 
@@ -44,8 +49,6 @@ void Game::Update(){
 
 	world_->MakeAffineMatrix();
 
-	camera_->MakeAffineMatrix();
-
 	camera_->MakeViewMatrix();
 
 	camera_->MakeProjectionMatrix();
@@ -56,14 +59,14 @@ void Game::Update(){
 
 	Game::CheckIsCollision();
 
-
+	Game::CameraController();
 
 }
 
 void Game::CheckIsCollision() {
 
 	
-	if (MyFunction::IsCollision(aabb_, sphere_)) {
+	if (MyFunction::IsCollision(aabb_, segment_)) {
 		aabbColor_ = RED;
 	}
 	else {
@@ -74,13 +77,46 @@ void Game::CheckIsCollision() {
 
 }
 
+void Game::MoveScale() {
+
+	int32_t wheel = Novice::GetWheel();
+
+	if (wheel != 0) {
+		cameraAffine_.translate.z -= (wheel / 1024.0f);
+	}
+}
+
+void Game::MoveRotation() {
+
+	
+	Novice::GetMousePosition(&mouseX_, &mouseY_);
+
+	if (Novice::IsPressMouse(1)) {
+		int deltaX = mouseX_ - prevMouseX_;
+		int deltaY = mouseY_ - prevMouseY_;
+
+		cameraAffine_.rotate.x += deltaY * 0.005f; 
+		cameraAffine_.rotate.y += deltaX * 0.005f; 
+	}
+	prevMouseX_ = mouseX_;
+	prevMouseY_ = mouseY_;
+
+}
+
+void Game::CameraController() {
+
+	Game::MoveScale();
+
+	Game::MoveRotation();
+}
+
 void Game::DrawDebugText()
 {
 	ImGui::Begin("DebugWindow");
 	ImGui::DragFloat3("aabb.min", &aabb_.min.x, 0.01f);
 	ImGui::DragFloat3("aabb.max", &aabb_.max.x, 0.01f);
-	ImGui::DragFloat3("sphere.center", &sphere_.center.x, 0.01f);
-	ImGui::DragFloat("sphere.radius", &sphere_.radius, 0.01f);
+	ImGui::DragFloat3("segment.origin", &segment_.origin.x, 0.01f);
+	ImGui::DragFloat3("segment.diff", &segment_.diff.x, 0.01f);
 	ImGui::End();
 }
 
@@ -240,15 +276,19 @@ void Game::Draw()
 {
 
 	uint32_t gridColor = GRAY;
-	uint32_t sphereColor = WHITE;
+	uint32_t lineColor = WHITE;
 
 	Game::DrawDebugText();
 
 	Game::DrawGrid(world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), gridColor);
 
-	Game::DrawSphere(sphere_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), sphereColor);
-
 	Game::DrawAABB(aabb_, world_->GetViewProjectionMatrix(), camera_->GetViewportMatrix(), aabbColor_);
+
+	Vector3 start = Transform(Transform(segment_.origin, world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
+	
+	Vector3 end = Transform(Transform(Add(segment_.origin, segment_.diff), world_->GetViewProjectionMatrix()), camera_->GetViewportMatrix());
+	
+	Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), lineColor);
 
 }
 

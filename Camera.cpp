@@ -16,9 +16,9 @@ Camera::Camera(Affine affine) {
 
 Camera::~Camera() {}
 
-void Camera::MakeAffineMatrix() {
+void Camera::MakeAffineMatrix(Affine affine) {
 
-	cameraWorldMatrix_ = MyFunction::AffineMatrix(affine_);
+	cameraWorldMatrix_ = MyFunction::STRAffineMatrix(affine);
 
 }
 

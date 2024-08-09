@@ -9,7 +9,7 @@ public:
 
 	~Camera();
 
-	void MakeAffineMatrix();
+	void MakeAffineMatrix(Affine affine);
 
 	void MakeViewMatrix();
 

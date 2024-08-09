@@ -16,7 +16,7 @@ WorldView::~WorldView()
 
 void WorldView::MakeAffineMatrix()
 {
-	worldMatrix_ = MyFunction::AffineMatrix(affine_);
+	worldMatrix_ = MyFunction::SRTAffineMatrix(affine_);
 }
 
 void WorldView::MakeWorldViewProjectionMatrix(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix){
